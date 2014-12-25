@@ -1,4 +1,4 @@
-corregedor
+Corregedor
 ==========
 
 Bot corretor ortográfico para o Twitter.
