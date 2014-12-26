@@ -43,7 +43,7 @@ for chave, valor in dicionario.iteritems():
 			print "[*] Tweet já respondido, pulando para o próximo"
 			continue
 		usuario = tweet.user.screen_name
-		time.sleep(random.uniform(0.26, 4.79)) # Para o script em tempos aleatórios
+		time.sleep(random.uniform(0.5, 80)) # Para o script em tempos aleatórios
 		reply = "@" + usuario + " " + random.choice(mensagens) + "\"" + valor + "\"" + "?"
 		# Escreve no banco de Tweets
 		f.write(str(id_tweet)+"\n")
