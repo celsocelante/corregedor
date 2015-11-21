@@ -12,45 +12,46 @@ auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
 api = tweepy.API(auth)
-f = open('tweets_respondidos','a+') # banco de Tweets já respondidos
-tweets_respondidos = [line.strip() for line in open('tweets_respondidos')] # Carrega os IDs em uma lista
+arquivoTweetsRespondidos = open('tweets_respondidos.txt','a+') # banco de Tweets já respondidos
+tweetsRespondidos = []
+
+for linha in arquivoTweetsRespondidos:
+	tweetsRespondidos.append(linha.strip())
 
 # Chave = palavra errada; valor = correção
-dicionario = {
-				"poblema":"problema",
-				"adolecente":"adolescente",
-				"ploblema":"problema",
-				"concerteza":"com certeza",
-				"encomoda":"incomoda",
-				"jente":"gente",
-				"presizo":"preciso",
-				"concegui":"consegui",
-				"revoutado":"revoltado",
-				"aki":"aqui"
-			}
+dicionario = {}
+arquivoDicionario = open('dicionario.txt','r')
+
+# Lê cada linha do arquivo, separa pelo delimitador ':' e adiciona ao dicionário
+for linha in arquivoDicionario:
+	dicionario[linha.partition(':')[0]] = linha.partition(':')[1]
+arquivoDicionario.close()
 
 # Mensagens que mudam aleatoriamente para não deixar as respostas tão robóticas
 mensagens = [u"Você sabia que o correto é ", u"Que tal ", u"Já pensou em escrever ", u"Não acha melhor ", u"Olha, já pensou em escrever ", u"Dica: sabia que o correto é ", u"Você cometeu um erro. Sabia que o certo é "]
 
 for chave, valor in dicionario.iteritems():
 	query = chave + " -RT" # Constrói a query da pesquisa, ignorando RTs
-	public_tweets = api.search(query,"pt")
+	publicTweets = api.search(query,"pt")
 	# Trabalha com os 3 mais recentes Tweets encontrados
-	for tweet in public_tweets[0:2]:
-		id_tweet = tweet.id
+	for tweet in publicTweets[0:2]:
 		# Se o Tweet já foi respondido antes, pula para o próximo
-		if str(id_tweet) in tweets_respondidos:
-			print "[*] Tweet já respondido, pulando para o próximo"
+		if str(id_tweet) in tweetsRespondidos:
+			print "[*] Tweet já respondido, pulando para o próximo Tweet"
 			continue
 		usuario = tweet.user.screen_name
 		time.sleep(random.uniform(0.5, 80)) # Para o script em tempos aleatórios
 		reply = "@" + usuario + " " + random.choice(mensagens) + "\"" + valor + "\"" + "?"
 		# Escreve no banco de Tweets
-		f.write(str(id_tweet)+"\n")
+		arquivoTweetsRespondidos.write(str(tweet.id)+"\n")
 		# Envia reply
-		api.update_status(reply,id_tweet)
+		try:
+			api.update_status(reply, tweet.id)
+		except:
+			print "[*] Ocorreu algum erro. Pulando para o próximo Tweet"
+			continue
 		# Faz RT
-		api.retweet(id_tweet)
+		api.retweet(tweet.id)
 		print reply
 
-f.close()
+arquivoTweetsRespondidos.close()
